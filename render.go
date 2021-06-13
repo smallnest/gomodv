@@ -1,22 +1,20 @@
-// This is a modified version of Modgraphviz created by the Go authors.
+// This is a modified version of modgraphviz created by the Go authors.
 // Original Modgraphviz resides in the experimental repository.
 // https://github.com/golang/exp/tree/master/cmd/modgraphviz
 
-package modgv
+package main
 
 import (
 	"bytes"
 	"fmt"
 	"io"
 	"strings"
-
-	"github.com/lucasepe/modgv/text"
 )
 
-// Render translates “go mod graph” output taken from
+// render translates “go mod graph” output taken from
 // the 'in' reader into Graphviz's DOT language, writing
 // to the 'out' writer.
-func Render(in io.Reader, out io.Writer) error {
+func render(in io.Reader, out io.Writer) error {
 	graph, err := convert(in)
 	if err != nil {
 		return err
@@ -50,7 +48,7 @@ func edgesAsDOT(gr *graph) []byte {
 	var buf bytes.Buffer
 	for _, e := range gr.edges {
 		fmt.Fprintf(&buf, "\t%q -> %q", e.from, e.to)
-		if _, ok := text.Find(gr.mvsUnpicked, e.to); ok {
+		if _, ok := find(gr.mvsUnpicked, e.to); ok {
 			fmt.Fprintf(&buf, "[style=dashed]")
 		}
 		fmt.Fprintf(&buf, ";\n")
@@ -92,4 +90,13 @@ func textToHTML(line string, color string) string {
 	sb.WriteString("</table>")
 
 	return sb.String()
+}
+
+func find(slice []string, val string) (int, bool) {
+	for i, item := range slice {
+		if item == val {
+			return i, true
+		}
+	}
+	return -1, false
 }

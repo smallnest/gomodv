@@ -1,8 +1,8 @@
-// This is a modified version of Modgraphviz created by the Go authors.
-// Original Modgraphviz resides in the experimental repository.
+// This is a modified version of modgraphviz created by the Go authors.
+// Original modgraphviz resides in the experimental repository.
 // https://github.com/golang/exp/tree/master/cmd/modgraphviz
 
-package modgv
+package main
 
 import (
 	"bufio"
@@ -14,13 +14,15 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-type edge struct{ from, to string }
-type graph struct {
-	root        string
-	edges       []edge
-	mvsPicked   []string
-	mvsUnpicked []string
-}
+type (
+	edge  struct{ from, to string }
+	graph struct {
+		root        string
+		edges       []edge
+		mvsPicked   []string
+		mvsUnpicked []string
+	}
+)
 
 // convert reads “go mod graph” output from r and returns a graph, recording
 // MVS picked and unpicked nodes along the way.

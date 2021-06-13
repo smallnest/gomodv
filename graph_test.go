@@ -1,4 +1,4 @@
-package modgv
+package main
 
 import (
 	"bytes"
