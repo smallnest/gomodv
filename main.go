@@ -30,6 +30,11 @@ import (
 	"path/filepath"
 )
 
+var (
+	short    = flag.Bool("s", false, "render in short mode")
+	unPicked = flag.Bool("unpicked", true, "render unpicked or not")
+)
+
 func main() {
 	flag.Usage = usage
 	flag.Parse()
@@ -37,7 +42,7 @@ func main() {
 		usage()
 	}
 
-	if err := render(os.Stdin, os.Stdout); err != nil {
+	if err := render(os.Stdin, os.Stdout, *short, *unPicked); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err.Error())
 		os.Exit(1)
 	}

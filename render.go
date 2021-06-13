@@ -14,7 +14,7 @@ import (
 // render translates “go mod graph” output taken from
 // the 'in' reader into Graphviz's DOT language, writing
 // to the 'out' writer.
-func render(in io.Reader, out io.Writer) error {
+func render(in io.Reader, out io.Writer, short, unPicked bool) error {
 	graph, err := convert(in)
 	if err != nil {
 		return err
@@ -33,10 +33,20 @@ func render(in io.Reader, out io.Writer) error {
 	for _, n := range graph.mvsPicked {
 		fmt.Fprintf(out, "\t%q [fillcolor=\"#007d9c\" label=<%s>];\n", n, textToHTML(n, "#ffffff"))
 	}
-	for _, n := range graph.mvsUnpicked {
-		fmt.Fprintf(out, "\t%q [fillcolor=\"#b2b2b2\" label=<%s>];\n", n, textToHTML(n, "#0e0e0e"))
+
+	ignoreNodes := make(map[string]bool)
+	if unPicked {
+		for _, n := range graph.mvsUnpicked {
+			fmt.Fprintf(out, "\t%q [fillcolor=\"#bababa\" label=<%s>];\n", n, textToHTML(n, "#0e0e0e"))
+		}
+	} else {
+		for _, n := range graph.mvsUnpicked {
+			ignoreNodes[n] = true
+		}
+		graph.mvsUnpicked = nil
 	}
-	out.Write(edgesAsDOT(graph))
+
+	out.Write(edgesAsDOT(graph, ignoreNodes))
 
 	fmt.Fprintf(out, "}\n")
 
@@ -44,9 +54,12 @@ func render(in io.Reader, out io.Writer) error {
 }
 
 // edgesAsDOT returns the edges in DOT notation.
-func edgesAsDOT(gr *graph) []byte {
+func edgesAsDOT(gr *graph, ignoreNodes map[string]bool) []byte {
 	var buf bytes.Buffer
 	for _, e := range gr.edges {
+		if ignoreNodes[e.from] || ignoreNodes[e.to] {
+			continue
+		}
 		fmt.Fprintf(&buf, "\t%q -> %q", e.from, e.to)
 		if _, ok := find(gr.mvsUnpicked, e.to); ok {
 			fmt.Fprintf(&buf, "[style=dashed]")
