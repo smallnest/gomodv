@@ -31,10 +31,10 @@ Here 👉 https://graphviz.gitlab.io/download/ how to install [GraphViz](https:/
 ## Sample output (PNG)
 
 ```bash
-go mod graph | gomodv | dot -Tpng -o graph.png
+go mod graph | gomodv | dot -Tpng -o graph2.png
 ```
 
-![](./graph.png)
+![](./graph2.png)
 
 In short mode and not render unpicked:
 
@@ -42,7 +42,7 @@ In short mode and not render unpicked:
 go mod graph | gomodv -s -unpicked=false| dot -Tpng -o graph.png
 ```
 
-![](./graph2.png)
+![](./graph.png)
 ---
 
 ## Sample output (PDF with clickable links to module docs)
