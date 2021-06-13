@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"golang.org/x/mod/module"
 )
 
 // render translates “go mod graph” output taken from
@@ -31,13 +33,13 @@ func render(in io.Reader, out io.Writer, short, unPicked bool) error {
 	fmt.Fprintf(out, "\t%q [color=\"#007d9c\" shape=box height=1 style=\"rounded\" fontsize=16 label=<<b>%s</b>>];\n", graph.root, rootToHTML(graph.root, "#000000"))
 
 	for _, n := range graph.mvsPicked {
-		fmt.Fprintf(out, "\t%q [fillcolor=\"#007d9c\" label=<%s>];\n", n, textToHTML(n, "#ffffff"))
+		fmt.Fprintf(out, "\t%q [fillcolor=\"#007d9c\" label=<%s>];\n", n, textToHTML(n, "#ffffff", "#e3e3e3", short))
 	}
 
 	ignoreNodes := make(map[string]bool)
 	if unPicked {
 		for _, n := range graph.mvsUnpicked {
-			fmt.Fprintf(out, "\t%q [fillcolor=\"#bababa\" label=<%s>];\n", n, textToHTML(n, "#0e0e0e"))
+			fmt.Fprintf(out, "\t%q [fillcolor=\"#bababa\" label=<%s>];\n", n, textToHTML(n, "#0e0e0e", "#3f3f3f", short))
 		}
 	} else {
 		for _, n := range graph.mvsUnpicked {
@@ -69,7 +71,7 @@ func edgesAsDOT(gr *graph, ignoreNodes map[string]bool) []byte {
 	return buf.Bytes()
 }
 
-func textToHTML(line string, color string) string {
+func textToHTML(line string, modColor, verColor string, short bool) string {
 	var mod, ver string
 	if i := strings.IndexByte(line, '@'); i >= 0 {
 		mod, ver = line[:i], line[i+1:]
@@ -83,21 +85,45 @@ func textToHTML(line string, color string) string {
 		sb.WriteString(u)
 	}
 	sb.WriteString(`>`)
-	if len(mod) > 0 {
-		sb.WriteString(`<tr><td><font color="`)
-		sb.WriteString(color)
-		sb.WriteString(`"><b>`)
-		sb.WriteString(mod)
-		sb.WriteString("</b></font></td></tr>")
-	}
 
-	if len(ver) > 0 {
+	if short {
+		if strings.Count(mod, "/") >= 2 {
+			i := strings.LastIndex(mod, "/")
+			m1 := mod[i:]
+			mod = mod[:i]
+			mod = mod[strings.LastIndex(mod, "/")+1:] + m1
+		}
+		if len(ver) > 0 {
+			if module.IsPseudoVersion(ver) {
+				ver = ver[strings.LastIndex(ver, "-")+1:]
+			}
+		}
 		sb.WriteString(`<tr><td><font color="`)
-		sb.WriteString(color)
-		sb.WriteString(`" point-size="10">`)
+		sb.WriteString(modColor)
+		sb.WriteString(`"><b>`)
+		sb.WriteString(mod + `</b></font><font color="`)
+		sb.WriteString(verColor)
+		sb.WriteString(`">@`)
 		sb.WriteString(ver)
 		sb.WriteString("</font></td></tr>")
+	} else {
+		if len(mod) > 0 {
+			sb.WriteString(`<tr><td><font color="`)
+			sb.WriteString(modColor)
+			sb.WriteString(`"><b>`)
+			sb.WriteString(mod)
+			sb.WriteString("</b></font></td></tr>")
+		}
+
+		if len(ver) > 0 {
+			sb.WriteString(`<tr><td><font color="`)
+			sb.WriteString(verColor)
+			sb.WriteString(`" point-size="10">`)
+			sb.WriteString(ver)
+			sb.WriteString("</font></td></tr>")
+		}
 	}
+
 	sb.WriteString("</table>")
 
 	return sb.String()
