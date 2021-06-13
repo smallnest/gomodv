@@ -28,13 +28,13 @@ func render(in io.Reader, out io.Writer) error {
 	fmt.Fprintf(out, "\tnodesep=\"0.8\";\n")
 	fmt.Fprintf(out, "\tnode [shape=plaintext style=\"filled,rounded\" penwidth=2 fontsize=12 fontname=\"monospace\"];\n")
 
-	fmt.Fprintf(out, "\t%q [shape=underline style=\"\" fontsize=14 label=<<b>%s</b>>];\n", graph.root, graph.root)
+	fmt.Fprintf(out, "\t%q [color=\"#007d9c\" shape=box height=1 style=\"rounded\" fontsize=16 label=<<b>%s</b>>];\n", graph.root, rootToHTML(graph.root, "#000000"))
 
 	for _, n := range graph.mvsPicked {
-		fmt.Fprintf(out, "\t%q [fillcolor=\"#0c5525\" label=<%s>];\n", n, textToHTML(n, "#fafafa"))
+		fmt.Fprintf(out, "\t%q [fillcolor=\"#007d9c\" label=<%s>];\n", n, textToHTML(n, "#ffffff"))
 	}
 	for _, n := range graph.mvsUnpicked {
-		fmt.Fprintf(out, "\t%q [fillcolor=\"#a3a3a3\" label=<%s>];\n", n, textToHTML(n, "#0e0e0e"))
+		fmt.Fprintf(out, "\t%q [fillcolor=\"#b2b2b2\" label=<%s>];\n", n, textToHTML(n, "#0e0e0e"))
 	}
 	out.Write(edgesAsDOT(graph))
 
@@ -56,8 +56,6 @@ func edgesAsDOT(gr *graph) []byte {
 	return buf.Bytes()
 }
 
-// textToHTML converts the line with module@version
-// in a colored HTML table
 func textToHTML(line string, color string) string {
 	var mod, ver string
 	if i := strings.IndexByte(line, '@'); i >= 0 {
@@ -87,6 +85,19 @@ func textToHTML(line string, color string) string {
 		sb.WriteString(ver)
 		sb.WriteString("</font></td></tr>")
 	}
+	sb.WriteString("</table>")
+
+	return sb.String()
+}
+
+func rootToHTML(root string, color string) string {
+	var sb strings.Builder
+	sb.WriteString(`<table border="0" cellspacing="8" >`)
+	sb.WriteString(`<tr><td><font color="`)
+	sb.WriteString(color)
+	sb.WriteString(`"><b>`)
+	sb.WriteString(root)
+	sb.WriteString("</b></font></td></tr>")
 	sb.WriteString("</table>")
 
 	return sb.String()
