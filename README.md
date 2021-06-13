@@ -36,6 +36,13 @@ go mod graph | gomodv | dot -Tpng -o graph.png
 
 ![](./graph.png)
 
+In short mode and not render unpicked:
+
+```bash
+go mod graph | gomodv -s -unpicked=false| dot -Tpng -o graph.png
+```
+
+![](./graph2.png)
 ---
 
 ## Sample output (PDF with clickable links to module docs)
